@@ -43,10 +43,10 @@ class MainRepository{
     }
 
     function getOne($id){
-        $sql = "SELECT * FROM $this->table WHERE id=$id";
-        $resp = $this->connect()->query($sql);
-        $rows = $resp->fetchAll(PDO::FETCH_CLASS, $this->entity);
+        $rows = $this->getAll("id=$id");
         return count($rows) == 1 ? $rows[0] : null;
     }
+
+    
 
 }
