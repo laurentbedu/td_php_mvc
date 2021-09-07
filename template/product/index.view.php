@@ -6,7 +6,8 @@
         foreach ($products as $product) {
     ?>
         <li>
-            <?= $product->name ?>
+            <a href="/product/read/<?= $product->id?>"><?= $product->name ?></a>
+            <span> (<?= $product->category->name ?>) </span>
         </li>
     <?php
         }

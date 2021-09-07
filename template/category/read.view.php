@@ -6,7 +6,7 @@ Produits de cette catégorie :
 </h2>
 <ul>
     <?php 
-        foreach ($products as $product) {
+        foreach ($category->products as $product) {
     ?>
         <li>
             <?= $product->name ?>
