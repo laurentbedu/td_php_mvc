@@ -1,7 +1,7 @@
 <?php
 
-class Product{
-    
+class Product extends Model{
+
     static $relations = 
         ["Category" => ['type'=>'hasOne', 
                         'table'=>'category', 

@@ -1,4 +1,4 @@
-<?php
+<?php session_start();
 
 function autoload($className){
     if (strpos($className, "Controller")) {
@@ -17,19 +17,45 @@ function autoload($className){
 spl_autoload_register("autoload");
 
 $route = $_SERVER["REQUEST_URI"];
+
+if(count($_POST) > 0){
+    $_SESSION['post'] = $_POST;
+    $_SESSION['files'] = $_FILES;
+    foreach($_SESSION['files'] as &$file){ 
+        if($file['error'] == 0){
+            $ext = explode('.',$file['name']);
+            $ext = array_pop($ext);
+            $name = "img".(microtime(true)*10000).".$ext";
+            move_uploaded_file($file['tmp_name'], $_SERVER["DOCUMENT_ROOT"]."/assets/img/temp/".$name);
+            $file['tmp_name'] = $_SERVER["DOCUMENT_ROOT"]."/assets/img/temp/".$name;
+        }
+    }
+
+    header("Location: $route");
+    die;
+}
+
 require_once 'router.php';
 $router = new Router($route);
 
 ?>
 
-<header>
-    HEADER
-</header>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" 
+    integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+<link rel="stylesheet" href="/assets/css/index.css">
 
-<main>
-    <?= $router->render() ?>
-</main>
+<body>
+    <div class="container-fluid">
+        <header>
+            HEADER
+        </header>
 
-<footer>
-    FOOTER
-</footer>
+        <main>
+            <?= $router->render() ?>
+        </main>
+
+        <footer>
+            FOOTER
+        </footer>
+    </div>
+</body>

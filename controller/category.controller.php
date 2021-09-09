@@ -24,10 +24,7 @@ class CategoryController extends BaseController{
             die;
         }
 
-        // $repository = new MainRepository("product");
-        // $products = $repository->getAll("category_id = $this->id");
-
-        $this->entities = ['category' => $category];//, 'products' => $products];
+        $this->entities = ['category' => $category];
 
         $this->render();
     }

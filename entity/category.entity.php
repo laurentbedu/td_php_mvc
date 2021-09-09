@@ -1,6 +1,6 @@
 <?php
 
-class Category{
+class Category extends Model {
 
     static $relations = 
         ["Products" => ['type'=>'hasMany', 
