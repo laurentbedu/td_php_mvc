@@ -48,14 +48,15 @@ class ProductController extends BaseController{
 
             if(isset($files['image_path']) && $files['image_path']['error'] == 0){
                 $file = $files['image_path'];
-                $posted['image_path'] = str_replace("/temp","",$file['tmp_name']);
-                $bp = 0;
+                $posted['image_path'] = 
+                    str_replace($_SERVER["DOCUMENT_ROOT"],"",str_replace("/temp","",$file['tmp_name']));
             }
             if(isset($posted['image_path'])){
                 $temp_image_path = explode('/',$posted['image_path']);
                 $indexToInsert = count($temp_image_path) - 1;
                 array_splice( $temp_image_path, $indexToInsert, 0, "temp" );
                 $temp_image_path = implode('/',$temp_image_path);
+                $temp_image_path = $_SERVER["DOCUMENT_ROOT"] . $temp_image_path ;
             }
             
             $repo = new MainRepository("product");
@@ -64,13 +65,89 @@ class ProductController extends BaseController{
                 $result = $repo->insertOne($posted);
                 if($result != false){
                     if (isset($posted['image_path'])) {
-                        $test = rename($temp_image_path, $posted['image_path']);
+                        $test = rename($temp_image_path, $_SERVER["DOCUMENT_ROOT"] . $posted['image_path']);
                     }
                     header("Location: /product/read/$result->id");
                     die;
                 }
             }
             
+        }
+
+        $repository = new MainRepository("category");
+        $categories = $repository->getAll();
+
+        $this->entities = [ 'categories' => $categories, 
+                            'errors' => $errors, 
+                            'posted' => $posted ];
+
+        $this->render();
+    }
+
+    function update(){
+
+        $errors = [];
+        $posted = [];
+
+        $repository = new MainRepository("product");
+        $product = $repository->getOne($this->id);
+        foreach($product as $k => $v){
+            $posted[$k] = $v;
+        }
+
+        if (isset($_SESSION['post'])) {
+            foreach($_SESSION['post'] as $k => $v){
+                $posted[$k] = $v;
+            }
+            unset($_SESSION['post']);
+            $files = $_SESSION['files'];
+            unset($_SESSION['files']);
+
+            if (isset($posted['cancel'])) {
+                //TODO Delete temp image file if exists
+                header("Location: /product/read/$this->id");
+                die;
+            }
+
+            if(isset($files['image_path']) && $files['image_path']['error'] == 0){
+                $file = $files['image_path'];
+                $posted['image_path'] = 
+                    str_replace($_SERVER["DOCUMENT_ROOT"],"",str_replace("/temp","",$file['tmp_name']));
+            }
+            if(isset($posted['image_path'])){
+                $temp_image_path = explode('/',$posted['image_path']);
+                $indexToInsert = count($temp_image_path) - 1;
+                array_splice( $temp_image_path, $indexToInsert, 0, "temp" );
+                $temp_image_path = implode('/',$temp_image_path);
+                $temp_image_path = $_SERVER["DOCUMENT_ROOT"] . $temp_image_path ;
+            }
+            
+            $needToBeUpdated = false;
+            foreach($posted as $k => $v){
+                if(isset($product->{$k}) &&  $product->{$k} != $v){
+                    $needToBeUpdated = true;
+                    break;
+                }
+            }
+
+            if($needToBeUpdated == true){
+                $posted['id'] = $this->id;
+                $errors = $repository->validate($posted);
+                if(count($errors) == 0){
+                    $result = $repository->updateOne($posted);
+                    if($result != false){
+                        if (isset($posted['image_path'])) {
+                            $test = rename($temp_image_path, $_SERVER["DOCUMENT_ROOT"] . $posted['image_path']);
+                        }
+                        header("Location: /product/read/$this->id");
+                        die;
+                    }
+                }
+            }
+            else{
+                header("Location: /product/read/$this->id");
+                die;
+            }
         }
 
         $repository = new MainRepository("category");

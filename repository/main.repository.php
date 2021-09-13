@@ -126,6 +126,31 @@ class MainRepository{
         return false;
     }
 
+    function updateOne($fields){ //TODO updateWhere
+        $set = "";
+        $valuesToBind = array();
+        $id = $fields['id'];
+        unset($fields['id']);
+        foreach($fields as $k=>$v){
+            $set .= $k."=?,";
+            array_push($valuesToBind,$v);
+        }
+        $set = trim($set,",");
+        $where = "id = ?";
+        array_push($valuesToBind,$id);
+        $sql = "UPDATE $this->table SET $set WHERE $where";
+        $statment = $this->connect()->prepare($sql);
+        $result = $statment->execute($valuesToBind);
+        $test = $statment->rowCount() == 1;
+        if($result && $test){
+            $entityClass = $this->entity;
+            $fields['id'] = $id;
+            $entity = new $entityClass($fields);
+            return $entity;
+        }
+        return false;
+    }
+
     function with($name){
         $relationToAdd = $this->entity::$relations[$name];
         array_push($this->relations, $relationToAdd);
