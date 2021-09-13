@@ -63,8 +63,20 @@ class MainRepository{
                     $currentResults = array_filter($results, function($item) use ($row, $relation){
                         return $item->id == $row->{$relation['foreignKey']};
                     });
-                    $row->{$relation['attribute']} = count($currentResults) == 1 ? array_shift($currentResults) : null;
+                    $row->{$relation['attribute']} = 
+                        count($currentResults) == 1 ? array_shift($currentResults) : null;
                 }
+            }
+            if($relation['type'] == 'isOne'){
+                $repo = new MainRepository($relation['table']);
+                $results = $repo->getAll();
+                foreach($rows as $row){
+                    $currentResults = array_filter($results, function($item) use ($row, $relation){
+                        return $item->{$relation['foreignKey']} == $row->id;
+                    });
+                    $row->{$relation['attribute']} = 
+                        count($currentResults) == 1 ? array_shift($currentResults) : null;
+                } 
             }
         }
         return $rows;
@@ -92,6 +104,12 @@ class MainRepository{
                 $repo = new MainRepository($relation['table']);
                 $result = $repo->getOne($row->{$relation['foreignKey']});
                 $row->{$relation['attribute']} = $result;
+            }
+            if($relation['type'] == 'isOne'){
+                $repo = new MainRepository($relation['table']);
+                $results = $repo->getAll($relation['foreignKey']." = $row->id");
+                $row->{$relation['attribute']} = 
+                    count($results) == 1 ? array_shift($results) : null;
             }
         }
 
