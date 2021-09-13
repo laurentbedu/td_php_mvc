@@ -46,7 +46,43 @@ class UserController extends BaseController
         $this->render();
     }
 
-    public function login(){
-        
+    private static $prefix = '$argon2id$v=19$m=1024,t=2,p=2$';
+    
+    private static $options = [
+        'memory_cost' => 1024,
+        'time_cost'   => 2,
+        'threads'     => 2,
+    ];
+
+    public function login(){    
+        $errors = [];
+        $posted = [];
+        if (isset($_SESSION['post'])){
+            $posted = $_SESSION['post'];
+            unset($_SESSION['post']);
+            $repository = new MainRepository('app_user');
+            $errors = $repository->validate($posted);
+            if (count($errors) == 0) {
+                $users = $repository->getAll("login = '".$posted['login'] ."'");
+                if(count($users) == 1){
+                    $user = array_pop($users);
+                    if(password_verify($posted['password'], self::$prefix . $user->password)){
+                        $_SESSION['logged'] = true;
+                        header('Location: /home');
+                        die;
+                    }
+                }
+            }
+            $errors['bad'] = true; 
+        }
+        $this->entities = [ 'errors' => $errors, 
+                            'posted' => $posted ];
+        $this->render();
+    }
+
+    public function logout(){
+        unset($_SESSION['logged']);
+        header('Location: /user/login');
+        die;
     }
 }

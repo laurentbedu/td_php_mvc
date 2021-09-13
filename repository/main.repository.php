@@ -210,6 +210,13 @@ class MainRepository{
                     $errors[$k] = true;
                 }
             }
+            $name = $column['Field'];
+            if($name == 'login'){
+                $filtered = filter_var($value, FILTER_VALIDATE_EMAIL);
+                if($filtered != $value || empty($filtered)){
+                    $errors[$k] = true;
+                }
+            }
         }
         return $errors;
     }

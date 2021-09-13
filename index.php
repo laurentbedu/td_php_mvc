@@ -47,7 +47,9 @@ $router = new Router($route);
 <body>
     <div class="container-fluid">
         <header>
-            HEADER
+            <?= isset($_SESSION['logged']) &&  $_SESSION['logged'] == true ? 
+                '<a href="/user/logout">Logout</a>' : 
+                '<a href="/user/login">Login</a>'?>
         </header>
 
         <main>
